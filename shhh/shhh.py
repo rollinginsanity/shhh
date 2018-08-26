@@ -118,7 +118,7 @@ class Shhh():
 
     def check_valid_key(self, password):
         """
-        Compares the thumbprints of the lib key and the entered key and returns true/false depending ont he match.
+        Compares the thumbprints of the lib key and the entered key and returns true/false depending on the match.
         :param password:
         :return:
         """

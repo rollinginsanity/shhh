@@ -29,7 +29,7 @@ class Shhh():
 
         if master_pass == None:
             print("Enter the master password for this library.")
-            master_pass = input(" - ")
+            master_pass: str = input(" - ")
 
         # Check they entered the password by comparing it to the hash of the key used to encrypt (library["key_thumbprint"])
         # Quit if invalid.
@@ -130,3 +130,13 @@ class Shhh():
         else:
             return False
 
+default_config = {
+    "library_dir_name": "libraries",
+    "default_library_name": "default",
+    "encrypt_usernames": True,
+    "password_rules": {
+        "min_length": 8,
+        "special_chars": False,
+        "upper_case": False
+    }
+}

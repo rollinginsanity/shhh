@@ -105,6 +105,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+libraries/
 
 default.json
 
+config.py

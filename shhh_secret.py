@@ -1,5 +1,6 @@
 from shhh.shhh import Shhh
-import os.path
+from os import path, getcwd, makedirs
+
 
 """
 This is meant to be the startup script to run the password manager. Doesn't do much yet. All it does is check if the 
@@ -8,7 +9,30 @@ default library is there. I should probably use a dedicated extension, and let t
 
 shhh = Shhh()
 
-if os.path.isfile("./default.json"):
+if not path.isfile("./config.json"):
+    # First Time Setup
+    from shhh.shhh import default_config
+    print("Performing first time setup!")
+    base_path: str = getcwd() + "/" # Base path that the script will run from.
+    print("Base path will be: "+base_path)
+    # Create directory for password libraries.
+    lib_dir = input("What folder do you want to store passwords in? ["+base_path+default_config["library_dir_name"]+"]")
+    # Use default if user does not enter a value.
+    print(len(lib_dir))
+    if len(lib_dir) < 1:
+        lib_dir = base_path+default_config["library_dir_name"]
+        print("Defaulting library directory set to: "+lib_dir)
+    else:
+        print("Library directory set to: " + lib_dir)
+
+    if not path.exists(lib_dir):
+        print("Folder does not exist, creating folder now.")
+        makedirs(lib_dir)
+    else:
+        print("Directory already exists.")
+
+
+if path.isfile("./default.json"):
 
     shhh.setup()
     print(shhh.library)

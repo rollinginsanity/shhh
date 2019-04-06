@@ -10,7 +10,7 @@ def setup():
     print("Enter the password: ")
     master_pass = input(" - ")
 
-    key = argon2.argon2_hash(master_pass, "ljndsoidanvljdnkavn")
+    key = argon2.low_level.hash_secret_raw(master_pass.encode("utf-8"), "blahblahblahblahblahblahblahblah".encode("utf-8"), time_cost=1, memory_cost=100000, parallelism=32, hash_len=64, type=argon2.low_level.Type.I)
 
     encoded_key = base64.urlsafe_b64encode(key[:32])
 

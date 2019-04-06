@@ -110,5 +110,5 @@ libraries/
 default.json
 
 config.py
-
+config.json
 .idea/workspace.xml

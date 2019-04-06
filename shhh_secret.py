@@ -1,5 +1,6 @@
 from shhh.shhh import Shhh
 from os import path, getcwd, makedirs
+import json
 
 
 """
@@ -10,6 +11,7 @@ default library is there. I should probably use a dedicated extension, and let t
 shhh = Shhh()
 
 if not path.isfile("./config.json"):
+    config = {}
     # First Time Setup
     from shhh.shhh import default_config
     print("Performing first time setup!")
@@ -23,6 +25,7 @@ if not path.isfile("./config.json"):
         lib_dir = base_path+default_config["library_dir_name"]
         print("Defaulting library directory set to: "+lib_dir)
     else:
+        lib_dir = base_path+lib_dir
         print("Library directory set to: " + lib_dir)
 
     if not path.exists(lib_dir):
@@ -31,12 +34,16 @@ if not path.isfile("./config.json"):
     else:
         print("Directory already exists.")
 
+    config["libraries_path"] = lib_dir
+
+    with open("./config.json", 'w') as config_file:
+        json.dump(config, config_file)
 
 if path.isfile("./default.json"):
 
     shhh.setup()
     print(shhh.library)
-
+    shhh.interact()
 else:
     shhh.create_library()
 

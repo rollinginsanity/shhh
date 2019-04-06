@@ -8,6 +8,16 @@ import hashlib
 
 class Shhh():
 
+    def __init__(self):
+
+        self.options = []
+        self.options.append("List all passwords")
+        self.options.append("Add new password")
+        self.options.append("Get password")
+        self.key = None
+        self.encryptor = None
+        self.library = None
+
     def setup(self, library=None, master_pass=None):
         """
         Init the Shhh class with a key and the ability to encrypt and whatnot.
@@ -39,11 +49,11 @@ class Shhh():
             quit()
 
         # Probably can incorporate this up earlier, generate the key from the password using Argon2 (look below).
-        key = self.generate_key_from_password(master_pass)
+        self.key = self.generate_key_from_password(master_pass)
 
 
         # Set up the cryptography fernet library.
-        self.cipher = Fernet(key)
+        self.encryptor = Fernet(self.key)
 
     def load_library(self, library_path):
         """
@@ -89,6 +99,14 @@ class Shhh():
             with open("default.json", "w") as library_file:
                 json.dump(library, library_file)
 
+    def update_library(self):
+        """
+        TODO change this to work with password libraries that have different names.
+        :return:
+        """
+        with open('./default.json', 'w') as library_file:
+            json.dump(self.library, library_file)
+
     def generate_key_from_password(self, master_pass, salt=None):
         """
         Use argon2 to generate a key from the password.
@@ -96,14 +114,13 @@ class Shhh():
         :param salt:
         :return:
         """
-
         # If there is an error trying to open self.library it probably means that this function is being called
         # to create a new library. If that fails then no salt was entered (or an error in Argon2 popped up).
         try:
-            key = argon2.argon2_hash(master_pass, self.library["salt"])
+            key = argon2.low_level.hash_secret_raw(master_pass.encode(), self.library["salt"].encode(), time_cost=1, memory_cost=100000, parallelism=32, hash_len=64, type=argon2.low_level.Type.I)
         except Exception:
             if salt != None:
-                key = argon2.argon2_hash(master_pass, salt)
+                key = argon2.low_level.hash_secret_raw(master_pass.encode(), salt.encode(), time_cost=1, memory_cost=100000, parallelism=32, hash_len=64, type=argon2.low_level.Type.I)
             else:
                 print("No Salt Entered! Bye!")
                 quit()
@@ -129,6 +146,62 @@ class Shhh():
             return True
         else:
             return False
+
+    def interact(self):
+        """
+        The meat and potatoes that does stuff.
+        :return:
+        """
+        while True:
+            self.show_options()
+            option = input(":")
+            if int(option) == 1:
+                cred = self.encrypt_credential()
+                self.library["credentials"].append(cred)
+                self.update_library()
+            if int(option) == 2:
+                self.decrypt_all()
+
+    def show_options(self):
+        """
+        Shows available options.
+        :return:
+        """
+        for key, option in enumerate(self.options):
+            print(str(key)+" "+option)
+
+    def encrypt_credential(self):
+        """
+        Encrypts a credential. Have to remember that it's base64 encoded...
+        :return:
+        """
+        print("Enter the name of the credential")
+        cred_name = input("Cred Name: ")
+        print("Enter the credential username.")
+        username = input("Username: ")
+        print("Enter the account password: ")
+        password = input("Password: ")
+        enc_pass = self.encryptor.encrypt(password.encode())
+
+        cred = {
+            "name": cred_name,
+            "usrnm": username,
+            "pwd": enc_pass.decode("utf-8")
+        }
+
+        print(enc_pass.decode("utf-8"))
+
+        return cred
+
+    def decrypt_all(self):
+        """
+        Only for lazy testing.
+        :return:
+        """
+        for credential in self.library["credentials"]:
+            credential = copy.deepcopy(credential)
+            decrypted_pass = self.encryptor.decrypt(credential["pwd"].encode())
+            print(decrypted_pass)
 
 default_config = {
     "library_dir_name": "libraries",
